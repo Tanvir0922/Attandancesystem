@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Management System</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="task-project-styles.css" />
+  </head>
+  <body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+      <h2>Arham IT Solution</h2>
+      <div class="role-selector">
+        <button class="role-btn active" onclick="selectRole('admin')">
+          Admin
+        </button>
+        <button class="role-btn" onclick="selectRole('employee')">
+          Employee
+        </button>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label id="loginLabel">Admin ID:</label>
+          <input
+            type="text"
+            id="loginId"
+            required
+            placeholder="Enter your ID"
+          />
+        </div>
+        <button type="submit" class="btn" style="width: 100%">Login</button>
+      </form>
+      <div id="loginMessage" style="margin-top: 20px"></div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="container" style="display: none">
+      <div class="header">
+        <h1>Arham IT Solution</h1>
+        <p id="headerSubtitle">Let's Work as a Team Together!!</p>
+      </div>
+
+      <div class="nav">
+        <div class="nav-left" id="navButtons"></div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+
+      <div class="content" id="contentArea"></div>
+    </div>
+
+    <!-- Code Display Modal -->
+    <div id="codeModal" class="code-modal">
+      <div class="code-modal-content">
+        <span class="code-modal-close" onclick="closeCodeModal()">&times;</span>
+        <h2 id="modalEmployeeName"></h2>
+        <p style="color: #666; margin: 15px 0">Face Recognition Setup</p>
+        <div id="faceSetupContent"></div>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal-overlay">
+      <div class="modal-box">
+        <span class="modal-close" onclick="closeHistoryModal()">&times;</span>
+        <h2
+          id="historyModalTitle"
+          style="color: #667eea; margin-bottom: 20px"
+        ></h2>
+        <div class="form-group">
+          <label>Filter by Date:</label>
+          <input
+            type="date"
+            id="historyFilterDate"
+            onchange="displayEmployeeHistoryInModal()"
+            value=""
+          />
+        </div>
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="historyModalBody">
+            <tr>
+              <td colspan="3" style="text-align: center">Loading...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Leave Request Modal -->
+    <div id="leaveModal" class="modal-overlay">
+      <div class="modal-box">
+        <span class="modal-close" onclick="closeLeaveModal()">&times;</span>
+        <h2 style="color: #667eea; margin-bottom: 20px">Leave Requests</h2>
+        <div id="leaveRequestsContainer"></div>
+      </div>
+    </div>
+
+    <!-- Edit Employee Modal -->
+    <div id="editModal" class="modal-overlay">
+      <div class="modal-box">
+        <span class="modal-close" onclick="closeEditModal()">&times;</span>
+        <h2 style="color: #667eea; margin-bottom: 20px">Edit Employee</h2>
+        <form id="editEmployeeForm">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Name:</label>
+              <input type="text" id="editEmpName" required />
+            </div>
+            <div class="form-group">
+              <label>Email:</label>
+              <input type="email" id="editEmpEmail" required />
+            </div>
+            <div class="form-group">
+              <label>Department:</label>
+              <input type="text" id="editEmpDept" required />
+            </div>
+            <div class="form-group">
+              <label>Position:</label>
+              <input type="text" id="editEmpPosition" required />
+            </div>
+            <div class="form-group">
+              <label>Salary:</label>
+              <input type="number" id="editEmpSalary" required />
+            </div>
+            <div class="form-group">
+              <label>Phone:</label>
+              <input type="tel" id="editEmpPhone" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success" style="width: 100%">
+            Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Leave Decision Modal -->
+    <div id="leaveDecisionModal" class="modal-overlay">
+      <div class="modal-box">
+        <span class="modal-close" onclick="closeLeaveDecisionModal()"
+          >&times;</span
+        >
+        <h2 style="color: #667eea; margin-bottom: 20px">
+          Leave Request Decision
+        </h2>
+        <div
+          id="leaveRequestInfo"
+          style="
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+          "
+        ></div>
+        <form id="leaveDecisionForm">
+          <div class="form-group">
+            <label>Decision:</label>
+            <select
+              id="decisionStatus"
+              required
+              onchange="updateDecisionLabel()"
+            >
+              <option value="">Select Decision</option>
+              <option value="approved">Approve</option>
+              <option value="rejected">Reject</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="reasonLabel">Reason (Optional):</label>
+            <textarea
+              id="decisionReason"
+              rows="4"
+              placeholder="Enter reason for your decision..."
+            ></textarea>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button type="submit" class="btn btn-success" style="flex: 1">
+              Submit Decision
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              style="flex: 1"
+              onclick="closeLeaveDecisionModal()"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Scripts - Load in correct order -->
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.9/dist/face-api.js"></script>
+
+    <!-- Core Configuration and Utilities FIRST -->
+    <script src="./Core Files/config.js"></script>
+    <script src="./Core Files/utils.js"></script>
+
+    <!-- Face Recognition -->
+    <script src="./Core Files/face-recognition.js"></script>
+
+    <!-- Authentication -->
+    <script src="./Core Files/auth.js"></script>
+
+    <!-- Admin Dashboard Files (Load modules BEFORE admin-dashboard.js) -->
+    <script src="./Admin Dashboard/admin-tasks.js"></script>
+    <script src="./Admin Dashboard/admin-projects.js"></script>
+    <script src="./Admin Dashboard/adminemployees.js"></script>
+    <script src="./Admin Dashboard/admin-attendance.js"></script>
+    <script src="./Admin Dashboard/admin-leaves.js"></script>
+    <script src="./Admin Dashboard/admin-reports.js"></script>
+    <script src="./Admin Dashboard/admin-payroll.js"></script>
+    <script src="./Admin Dashboard/admin-analytics.js"></script>
+    <script src="./Admin Dashboard/admin-dashboard.js"></script>
+
+    <!-- Employee Dashboard Files -->
+    <script src="./Employee Dashboard/employee-dashboard.js"></script>
+    <script src="./Employee Dashboard/employee-attendance-face.js"></script>
+    <script src="./Employee Dashboard/employee-history.js"></script>
+    <script src="./Employee Dashboard/employee-leaves.js"></script>
+    <script src="./Employee Dashboard/employee-tasks.js"></script>
+    <script src="./Employee Dashboard/employee-projects.js"></script>
+
+    <!-- Main App LAST -->
+    <script src="./Core Files/app.js"></script>
+  </body>
+</html>
