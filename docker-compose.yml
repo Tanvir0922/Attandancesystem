@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: attendance_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=tanvir123
+      - DB_NAME=attendance_db
+    volumes:
+      - .:/var/www/html
+
+  db:
+    image: mysql:8
+    container_name: attendance_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: tanvir123
+      MYSQL_DATABASE: attendance_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
