@@ -1,19 +1,24 @@
-# PHP 8.2 with Apache
 FROM php:8.2-apache
+
+# Install required system packages
+RUN apt-get update && apt-get install -y \
+    libonig-dev \
+    libzip-dev \
+    default-mysql-client \
+    zip \
+    unzip \
+    && docker-php-ext-install mysqli pdo pdo_mysql \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache rewrite
 RUN a2enmod rewrite
 
-# (Optional) PHP extensions — agar future me chahiye
-RUN docker-php-ext-install mysqli pdo pdo_mysql
-
 # Copy project files
 COPY . /var/www/html/
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Permissions
 RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
