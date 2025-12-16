@@ -37,7 +37,7 @@ pipeline {
                 sh '''
                 docker run -d \
                 --name $APP_NAME \
-                -p 8080:80 \
+                -p 9090:80 \
                 $IMAGE_NAME
                 '''
             }
@@ -46,11 +46,12 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment Successful! App running on port 8080"
+            echo "✅ Deployment Successful! App running on port 9090"
         }
         failure {
             echo "❌ Deployment Failed"
         }
     }
 }
+
 
