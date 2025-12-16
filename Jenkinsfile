@@ -1,50 +1,55 @@
 pipeline {
     agent any
 
+    environment {
+        APP_NAME = "attendance_app"
+        IMAGE_NAME = "attendance_app_image"
+    }
+
     stages {
 
-        stage('Clone Repository') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/Tanvir0922/Attandancesystem.git'
+                url: 'https://github.com/Tanvir0922/Attandancesystem.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'docker build -t attendance-system .'
-                }
+                sh '''
+                docker build -t $IMAGE_NAME .
+                '''
             }
         }
 
-        stage('Run Containers') {
+        stage('Stop Old Container') {
             steps {
-                script {
-                    // Stop old containers
-                    sh 'docker compose down || true'
-
-                    // Start new containers
-                    sh 'docker compose up -d --build'
-                }
+                sh '''
+                docker stop $APP_NAME || true
+                docker rm $APP_NAME || true
+                '''
             }
         }
 
-        stage('Verify Running Containers') {
+        stage('Run New Container') {
             steps {
-                script {
-                    sh 'docker ps'
-                }
+                sh '''
+                docker run -d \
+                --name $APP_NAME \
+                -p 8080:80 \
+                $IMAGE_NAME
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "Deployment Successful!"
+            echo "✅ Deployment Successful! App running on port 8080"
         }
         failure {
-            echo "Deployment Failed!"
+            echo "❌ Deployment Failed"
         }
     }
 }
