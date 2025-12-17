@@ -5,7 +5,8 @@ services:
     build: .
     container_name: attendance_app
     ports:
-      - "9090:80"
+      - "9090:90"
     volumes:
       - .:/var/www/html
+
 
