@@ -1,12 +1,13 @@
 version: "3.9"
 
 services:
-  app:
-    build: .
-    container_name: attendance_app
+  firebase-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: firebase-api
     ports:
-      - "9090:90"
-    volumes:
-      - .:/var/www/html
-
-
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
