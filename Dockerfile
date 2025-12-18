@@ -1,27 +1,26 @@
-FROM php:8.2-apache
+# Lightweight base image
+FROM node:18-alpine
 
-# Install required system packages
-RUN apt-get update && apt-get install -y \
-    libonig-dev \
-    libzip-dev \
-    default-mysql-client \
-    zip \
-    unzip \
-    && docker-php-ext-install mysqli pdo pdo_mysql \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Create app directory
+WORKDIR /app
 
-# Enable Apache rewrite
-RUN a2enmod rewrite
+# Copy package files first (for cache)
+COPY package*.json ./
 
-# Copy project files
-COPY . /var/www/html/
+# Install only production dependencies
+RUN npm ci --only=production
 
-WORKDIR /var/www/html
+# Copy application code
+COPY . .
 
-RUN chown -R www-data:www-data /var/www/html
+# Change ownership (security)
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && chown -R appuser:appgroup /app
 
-EXPOSE 90
+USER appuser
 
-CMD ["apache2-foreground"]
+# Expose port
+EXPOSE 3001
 
+# Start server
+CMD ["node", "server.js"]
