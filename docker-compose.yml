@@ -7,7 +7,8 @@ services:
       dockerfile: Dockerfile
     container_name: firebase-api
     ports:
-      - "3001:3001"
+      - "90:90"
     environment:
       NODE_ENV: production
     restart: unless-stopped
+
